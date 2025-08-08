@@ -1,0 +1,35 @@
+Xây dựng một hệ thống web giúp người dùng ghi nhận, quản lý và báo cáo công việc theo tuần.
+Các yêu cầu :
+- Hệ thống có người dùng là nhân viên , leader và admin , leader có thể dùng các chức năng của nhân viên và một số các chức năng riêng.
+- Đối với nhân viên:
+    + Đăng ký với vai trò là nhân viên , đăng nhập, có thể chọn nhóm làm việc để vào
+    + Có thể thêm, sửa, xóa, cập nhật trạng thái công việc
+    + Có thể upload các file liên quan đến công việc
+    + Có thể quản lý , cập nhật thông tin cá nhân
+    + Hỗ trợ tìm kiếm lọc công việc theo ngày, theo tuần
+    + Theo dõi tiến độ làm việc
+- Đối với leader:
+    + Có thể xem thông tin các thành viên trong nhóm
+    + Có thể theo dõi tiến độ làm việc của nhân viên trong nhóm, có thể lọc công việc theo người dùng, theo thời gian
+    + Có thể tạo công việc để giao cho nhân viên trong nhóm.
+    + Tạo, xem báo cáo tổng hợp của từng người hoặc cả nhóm theo tuần
+    + Tùy chọn xuất báo cáo dạng PDF hoặc Exel
+- Đối với admin:
+    + Đăng ký với vai trò là admin, đăng nhập
+    + Có thể xem thông tin toàn bộ nhân viên và leader, có thể xóa nhân viên , có thể phân quyền cho nhân viên thành leader hoặc ngược lại
+    + Có thể tìm kiếm/ lọc nhân viên theo role, theo nhóm , theo mã nhân viên hoặc theo tên
+- Đối với công việc:
+    + Công việc có thể được chia thành các đầu việc con nhỏ hơn hoặc không
+    + Có người giao và người nhận
+
+Yêu cầu kỹ thuật:
+- Mô hình kiến trúc client -server ,rest-api
+- Giao diện web thân thiện, responsive
+- Có thể chạy bằng Docker
+- Có thể chạy localhost
+
+Công nghệ sử dụng:
+- backend : Python - Flask
+- frontend: htm/css/js + bootstrap
+- Database : MySQL
+...

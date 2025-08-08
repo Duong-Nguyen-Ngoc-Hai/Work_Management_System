@@ -1,0 +1,1260 @@
+{% extends "base.html" %}
+
+{% block title %}User Management - Work Management{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h2><i class="fas fa-users me-2"></i>User Management</h2>
+                        <div>
+                            <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#createUserModal">
+                                <i class="fas fa-user-plus me-2"></i>Create User
+                            </button>
+                            <button class="btn btn-success" onclick="exportUsers()">
+                                <i class="fas fa-download me-2"></i>Export
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stats-card bg-primary text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-users fa-2x mb-3"></i>
+                    <div class="stats-number" id="totalUsers">0</div>
+                    <div class="stats-label">Total Users</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stats-card bg-info text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-user-tie fa-2x mb-3"></i>
+                    <div class="stats-number" id="adminCount">0</div>
+                    <div class="stats-label">Admins</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stats-card bg-warning text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-user-cog fa-2x mb-3"></i>
+                    <div class="stats-number" id="leaderCount">0</div>
+                    <div class="stats-label">Leaders</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stats-card bg-success text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-user fa-2x mb-3"></i>
+                    <div class="stats-number" id="employeeCount">0</div>
+                    <div class="stats-label">Employees</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-filter me-2"></i>Search & Filter</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Search by Name</label>
+                            <input type="text" class="form-control" id="searchName" placeholder="Enter name...">
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label class="form-label">Role</label>
+                            <select class="form-control" id="filterRole">
+                                <option value="">All Roles</option>
+                                <option value="employee">Employee</option>
+                                <option value="leader">Leader</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label class="form-label">Group</label>
+                            <select class="form-control" id="filterGroup">
+                                <option value="">All Groups</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label class="form-label">Status</label>
+                            <select class="form-control" id="filterStatus">
+                                <option value="">All Status</option>
+                                <option value="true">Active</option>
+                                <option value="false">Inactive</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label class="form-label">Employee Code</label>
+                            <input type="text" class="form-control" id="searchCode" placeholder="Employee code...">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <button class="btn btn-secondary me-2" onclick="clearFilters()">
+                                <i class="fas fa-times"></i> Clear
+                            </button>
+                            <button class="btn btn-primary" onclick="applyFilters()">
+                                <i class="fas fa-search"></i> Apply Filters
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                <h5><i class="fas fa-list me-2"></i>Users</h5>
+                <div class="d-flex align-items-center">
+                    <!-- ✅ THÊM: Sort Dropdown -->
+                    <div class="dropdown me-3">
+                        <button class="btn btn-sm btn-secondary dropdown-toggle" type="button" id="userSortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-sort me-1"></i>Sort by
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="userSortDropdown">
+                            <li><a class="dropdown-item active" href="#" onclick="sortUsers('name_asc')">
+                                <i class="fas fa-sort-alpha-down me-2"></i>Name (A-Z)
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" onclick="sortUsers('name_desc')">
+                                <i class="fas fa-sort-alpha-up me-2"></i>Name (Z-A)
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" onclick="sortUsers('code_asc')">
+                                <i class="fas fa-sort-numeric-down me-2"></i>Employee Code (A-Z)
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" onclick="sortUsers('code_desc')">
+                                <i class="fas fa-sort-numeric-up me-2"></i>Employee Code (Z-A)
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" onclick="sortUsers('created_desc')">
+                                <i class="fas fa-clock me-2"></i>Newest First
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" onclick="sortUsers('created_asc')">
+                                <i class="fas fa-history me-2"></i>Oldest First
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" onclick="sortUsers('role')">
+                                <i class="fas fa-user-tag me-2"></i>Role (Admin→Leader→Employee)
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" onclick="sortUsers('tasks_desc')">
+                                <i class="fas fa-tasks me-2"></i>Most Tasks First
+                            </a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Avatar</th>
+                                    <th>Employee Code</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Group</th>
+                                    <th>Tasks</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody">
+                                <tr>
+                                    <td colspan="10" class="text-center">
+                                        <div class="spinner-border" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div id="usersPaginationInfo" class="text-muted">
+                            Showing 0 users
+                        </div>
+                        <nav aria-label="Users pagination">
+                            <ul class="pagination pagination-sm mb-0" id="usersPagination">
+                                <!-- Pagination items will be generated here -->
+                            </ul>
+                        </nav>
+                    </div>
+                    
+                    <!-- ✅ THÊM: Filter Results Info -->
+                    <div id="usersFilterResults" class="alert alert-info py-2 mt-3" style="display: none;">
+                        <i class="fas fa-filter me-2"></i>
+                        <span id="usersFilterResultsText"></span>
+                        <button type="button" class="btn-close btn-sm ms-2" onclick="clearFilters()" style="font-size: 0.8rem;"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create User Modal -->
+<div class="modal fade" id="createUserModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-user-plus me-2"></i>Create New User</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="createUserForm">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Full Name *</label>
+                            <input type="text" class="form-control" name="name" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Email *</label>
+                            <input type="email" class="form-control" name="email" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Password *</label>
+                            <input type="password" class="form-control" name="password" required minlength="6">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Employee Code</label>
+                            <input type="text" class="form-control" name="employee_code" 
+                                   placeholder="Leave empty for auto-generation">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Role</label>
+                            <select class="form-control" name="role" required>
+                                <option value="employee">Employee</option>
+                                <option value="leader">Leader</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Group</label>
+                            <select class="form-control" name="group_id" id="createUserGroupSelect">
+                                <option value="">No group</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit User Modal -->
+<div class="modal fade" id="editUserModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-user-edit me-2"></i>Edit User</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editUserForm">
+                <div class="modal-body" id="editUserFormContent">
+                    <!-- Content will be loaded here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- User Detail Modal -->
+<div class="modal fade" id="userDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="userDetailTitle">User Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="userDetailContent">
+                    <!-- Content will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentUsers = [];
+let filteredUsers = []; 
+let isFiltering = false;
+let currentSort = 'name_asc';
+let currentPage = 1;
+let usersPerPage = 10;
+
+$(document).ready(function() {
+    checkAdminAccess();
+    loadUsers();
+    loadGroupOptions();
+    setupEventHandlers();
+    
+    
+    setInterval(loadUsers, 600000);
+});
+
+function sortUsers(sortType) {
+    currentSort = sortType;
+    
+    $('#userSortDropdown').next('.dropdown-menu').find('.dropdown-item').removeClass('active');
+    $(`[onclick="sortUsers('${sortType}')"]`).addClass('active');
+    
+    const sortTexts = {
+        'name_asc': 'Name (A-Z)',
+        'name_desc': 'Name (Z-A)',
+        'code_asc': 'Employee Code (A-Z)', 
+        'code_desc': 'Employee Code (Z-A)',
+        'created_desc': 'Newest First',
+        'created_asc': 'Oldest First',
+        'role': 'Role (Admin→Leader→Employee)',
+        'tasks_desc': 'Most Tasks First'
+    };
+    
+    $('#userSortDropdown').html(`<i class="fas fa-sort me-1"></i>${sortTexts[sortType]}`);
+    
+    const usersToSort = isFiltering ? filteredUsers : currentUsers;
+    const sortedUsers = applySortToUsers([...usersToSort], sortType);
+    
+    if (isFiltering) {
+        filteredUsers = sortedUsers;
+    } else {
+        currentUsers = sortedUsers;
+        filteredUsers = [...currentUsers];
+    }
+    
+    currentPage = 1;
+    displayUsersWithPagination(sortedUsers);
+}
+
+function applySortToUsers(users, sortType) {
+    return users.sort((a, b) => {
+        switch (sortType) {
+            case 'name_asc':
+                return a.name.localeCompare(b.name);
+            
+            case 'name_desc':
+                return b.name.localeCompare(a.name);
+            
+            case 'code_asc':
+                const codeA = a.employee_code || '';
+                const codeB = b.employee_code || '';
+                return codeA.localeCompare(codeB);
+            
+            case 'code_desc':
+                const codeA2 = a.employee_code || '';
+                const codeB2 = b.employee_code || '';
+                return codeB2.localeCompare(codeA2);
+            
+            case 'created_desc':
+                return new Date(b.created_at) - new Date(a.created_at);
+            
+            case 'created_asc':
+                return new Date(a.created_at) - new Date(b.created_at);
+            
+            case 'role':
+                // Admin → Leader → Employee
+                const roleOrder = { 'admin': 3, 'leader': 2, 'employee': 1 };
+                return (roleOrder[b.role] || 0) - (roleOrder[a.role] || 0);
+            
+            case 'tasks_desc':
+                return (b.total_tasks || 0) - (a.total_tasks || 0);
+            
+            default:
+                return 0;
+        }
+    });
+}
+
+function checkAdminAccess() {
+    const user = WorkManagement.currentUser();
+    if (!user || user.role !== 'admin') {
+        showAlert('danger', 'Access denied. Admin privileges required.');
+        setTimeout(() => {
+            window.location.href = '/dashboard';
+        }, 2000);
+        return;
+    }
+}
+
+function setupEventHandlers() {
+    // ✅ SỬA: Auto-apply filters on change
+    $('#searchName').on('input', debounce(function() {
+        isFiltering = $('#searchName').val().length > 0;
+        applyFilters();
+    }, 500));
+    
+    $('#searchCode').on('input', debounce(function() {
+        isFiltering = $('#searchCode').val().length > 0;
+        applyFilters();
+    }, 500));
+    
+    $('#filterRole').on('change', function() {
+        isFiltering = $(this).val() !== '';
+        applyFilters();
+    });
+    
+    $('#filterGroup').on('change', function() {
+        isFiltering = $(this).val() !== '';
+        applyFilters();
+    });
+    
+    $('#filterStatus').on('change', function() {
+        isFiltering = $(this).val() !== '';
+        applyFilters();
+    });
+    
+    // Create user form submission
+    $('#createUserForm').on('submit', async function(e) {
+        e.preventDefault();
+        await createUser();
+    });
+    
+    // Edit user form submission
+    $('#editUserForm').on('submit', async function(e) {
+        e.preventDefault();
+        await updateUser();
+    });
+}
+
+async function loadUsers() {
+    try {
+        showLoading();
+        const response = await apiCall('/users/all');
+        
+        // ✅ Apply current sort to loaded users
+        currentUsers = applySortToUsers(response, currentSort);
+        
+        // ✅ Chỉ hiển thị lại nếu user KHÔNG đang filter
+        if (!isFiltering) {
+            filteredUsers = [...currentUsers];
+            currentPage = 1; // ✅ Reset về trang 1
+            displayUsersWithPagination(filteredUsers);
+        }
+        
+        updateStatistics(currentUsers);
+        
+    } catch (error) {
+        console.error('Error loading users:', error);
+        showAlert('danger', 'Error loading users');
+        currentUsers = [];
+        if (!isFiltering) {
+            filteredUsers = [];
+            displayUsersWithPagination([]);
+        }
+    } finally {
+        hideLoading();
+    }
+}
+
+async function loadGroupOptions() {
+    try {
+        const groups = await apiCall('/groups/all');
+        const groupSelects = ['#filterGroup', '#createUserGroupSelect'];
+        
+        groupSelects.forEach(selector => {
+            const select = $(selector);
+            if (selector === '#filterGroup') {
+                select.empty().append('<option value="">All Groups</option>');
+            } else {
+                select.empty().append('<option value="">No group</option>');
+            }
+            
+            groups.forEach(group => {
+                select.append(`<option value="${group.id}">${group.name}</option>`);
+            });
+        });
+        
+    } catch (error) {
+        console.error('Error loading groups:', error);
+    }
+}
+
+function displayUsers(users) {
+    const tbody = $('#usersTableBody');
+    tbody.empty();
+    
+    if (users.length === 0) {
+        tbody.append('<tr><td colspan="10" class="text-center text-muted">No users found</td></tr>');
+        return;
+    }
+    
+    users.forEach(user => {
+        const row = `
+            <tr>
+                <td>
+                    <div class="avatar-md bg-${getRoleColor(user.role)} text-white rounded-circle d-flex align-items-center justify-content-center">
+                        ${user.name.charAt(0).toUpperCase()}
+                    </div>
+                </td>
+                <td>
+                    <span class="badge bg-secondary">${user.employee_code || 'N/A'}</span>
+                </td>
+                <td>
+                    <div>
+                        <strong>${user.name}</strong>
+                        ${!user.is_active ? '<span class="badge bg-danger ms-2">Inactive</span>' : ''}
+                    </div>
+                </td>
+                <td>${user.email}</td>
+                <td>
+                    <span class="badge bg-${getRoleColor(user.role)}">
+                        <i class="fas ${getRoleIcon(user.role)} me-1"></i>
+                        ${user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                    </span>
+                </td>
+                <td>
+                    ${user.group ? 
+                        `<span class="badge bg-info">${user.group.name}</span>` : 
+                        '<span class="text-muted">No group</span>'
+                    }
+                </td>
+                <td>
+                    <div class="d-flex align-items-center">
+                        <div class="me-2">
+                            <div class="fw-bold">${user.total_tasks}</div>
+                            <small class="text-muted">Total</small>
+                        </div>
+                        <div>
+                            <div class="fw-bold text-success">${user.completed_tasks}</div>
+                            <small class="text-muted">Done</small>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <span class="badge bg-${user.is_active ? 'success' : 'danger'}">
+                        ${user.is_active ? 'Active' : 'Inactive'}
+                    </span>
+                </td>
+                <td>
+                    <small class="text-muted">${formatDate(user.created_at)}</small>
+                </td>
+                <td>
+                    <div class="btn-group" role="group">
+                        <button class="btn btn-sm btn-outline-primary" onclick="viewUserDetail(${user.id})" title="View Details">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-warning" onclick="editUser(${user.id})" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <div class="btn-group" role="group">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <ul class="dropdown-menu">
+                                ${user.role !== 'admin' ? `
+                                    <li><a class="dropdown-item" href="#" onclick="promoteUser(${user.id})">
+                                        <i class="fas fa-arrow-up text-success me-2"></i>Promote to Leader
+                                    </a></li>
+                                ` : ''}
+                                ${user.role === 'leader' ? `
+                                    <li><a class="dropdown-item" href="#" onclick="demoteUser(${user.id})">
+                                        <i class="fas fa-arrow-down text-warning me-2"></i>Demote to Employee
+                                    </a></li>
+                                ` : ''}
+                                <li><a class="dropdown-item" href="#" onclick="toggleUserStatus(${user.id}, ${!user.is_active})">
+                                    <i class="fas fa-${user.is_active ? 'ban text-danger' : 'check text-success'} me-2"></i>
+                                    ${user.is_active ? 'Deactivate' : 'Activate'}
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="#" onclick="deleteUser(${user.id})">
+                                    <i class="fas fa-trash me-2"></i>Delete
+                                </a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        `;
+        tbody.append(row);
+    });
+}
+
+function displayUsersWithPagination(users) {
+    const totalUsers = users.length;
+    const totalPages = Math.ceil(totalUsers / usersPerPage);
+    const startIndex = (currentPage - 1) * usersPerPage;
+    const endIndex = startIndex + usersPerPage;
+    const usersToShow = users.slice(startIndex, endIndex);
+    
+    // Hiển thị users cho trang hiện tại
+    displayUsers(usersToShow);
+    updateUsersPaginationInfo(totalUsers, startIndex, endIndex);
+    generateUsersPagination(totalPages);
+}
+
+function updateUsersPaginationInfo(total, start, end) {
+    const showing = Math.min(end, total);
+    const text = total > 0 ? 
+        `Showing ${start + 1}-${showing} of ${total} users` : 
+        'No users found';
+    $('#usersPaginationInfo').text(text);
+}
+
+function generateUsersPagination(totalPages) {
+    const pagination = $('#usersPagination');
+    pagination.empty();
+    
+    if (totalPages <= 1) return;
+    
+    // Previous button
+    pagination.append(`
+        <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+            <a class="page-link" href="#" onclick="changeUsersPage(${currentPage - 1})" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+    `);
+    
+    // Page numbers
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    
+    // Adjust start if we're near the end
+    if (endPage - startPage + 1 < maxVisiblePages) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+        pagination.append(`
+            <li class="page-item ${i === currentPage ? 'active' : ''}">
+                <a class="page-link" href="#" onclick="changeUsersPage(${i})">${i}</a>
+            </li>
+        `);
+    }
+    
+    // Next button
+    pagination.append(`
+        <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+            <a class="page-link" href="#" onclick="changeUsersPage(${currentPage + 1})" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+    `);
+}
+
+function changeUsersPage(page) {
+    const totalUsers = isFiltering ? filteredUsers.length : currentUsers.length;
+    const totalPages = Math.ceil(totalUsers / usersPerPage);
+    
+    if (page < 1 || page > totalPages) return;
+    
+    currentPage = page;
+    const usersToDisplay = isFiltering ? filteredUsers : currentUsers;
+    displayUsersWithPagination(usersToDisplay);
+}
+
+function updateStatistics(users) {
+    const totalUsers = users.length;
+    const adminCount = users.filter(u => u.role === 'admin').length;
+    const leaderCount = users.filter(u => u.role === 'leader').length;
+    const employeeCount = users.filter(u => u.role === 'employee').length;
+    
+    $('#totalUsers').text(totalUsers);
+    $('#adminCount').text(adminCount);
+    $('#leaderCount').text(leaderCount);
+    $('#employeeCount').text(employeeCount);
+}
+
+function getRoleColor(role) {
+    const colors = {
+        'admin': 'danger',
+        'leader': 'warning',
+        'employee': 'primary'
+    };
+    return colors[role] || 'secondary';
+}
+
+function getRoleIcon(role) {
+    const icons = {
+        'admin': 'fa-user-tie',
+        'leader': 'fa-user-cog',
+        'employee': 'fa-user'
+    };
+    return icons[role] || 'fa-user';
+}
+
+function applyFilters() {
+    const filters = {
+        name: $('#searchName').val(),
+        role: $('#filterRole').val(),
+        group_id: $('#filterGroup').val(),
+        is_active: $('#filterStatus').val(),
+        employee_code: $('#searchCode').val()
+    };
+    
+    // ✅ Cập nhật filtering state
+    isFiltering = filters.name || filters.role || filters.group_id || filters.is_active || filters.employee_code;
+    
+    let filtered = [...currentUsers];
+    
+    // Apply filters
+    if (filters.name) {
+        filtered = filtered.filter(user => 
+            user.name.toLowerCase().includes(filters.name.toLowerCase())
+        );
+    }
+    
+    if (filters.role) {
+        filtered = filtered.filter(user => user.role === filters.role);
+    }
+    
+    if (filters.group_id) {
+        filtered = filtered.filter(user => 
+            user.group && user.group.id == filters.group_id
+        );
+    }
+    
+    if (filters.is_active !== '') {
+        const isActive = filters.is_active === 'true';
+        filtered = filtered.filter(user => user.is_active === isActive);
+    }
+    
+    if (filters.employee_code) {
+        filtered = filtered.filter(user => 
+            user.employee_code && user.employee_code.toLowerCase().includes(filters.employee_code.toLowerCase())
+        );
+    }
+    
+    // ✅ Apply current sort to filtered users
+    filtered = applySortToUsers(filtered, currentSort);
+    
+    // ✅ Lưu filtered users và reset về trang 1
+    filteredUsers = filtered;
+    currentPage = 1;
+    
+    // ✅ Hiển thị số lượng kết quả filter
+    updateUsersFilterResults(filtered.length, currentUsers.length);
+    
+    displayUsersWithPagination(filtered);
+}
+
+function updateUsersFilterResults(filteredCount, totalCount) {
+    const resultsElement = $('#usersFilterResults');
+    
+    if (filteredCount < totalCount) {
+        $('#usersFilterResultsText').text(`Showing ${filteredCount} of ${totalCount} users`);
+        resultsElement.show();
+    } else {
+        resultsElement.hide();
+    }
+}
+
+function clearFilters() {
+    $('#searchName').val('');
+    $('#filterRole').val('');
+    $('#filterGroup').val('');
+    $('#filterStatus').val('');
+    $('#searchCode').val('');
+    
+    // ✅ Reset filtering state và hiển thị all users
+    isFiltering = false;
+    filteredUsers = [...currentUsers];
+    currentPage = 1; // ✅ Reset về trang 1
+    
+    // ✅ Ẩn filter results
+    $('#usersFilterResults').hide();
+    
+    displayUsersWithPagination(filteredUsers);
+}
+
+async function createUser() {
+    try {
+        const formData = getFormData('createUserForm');
+        const currentUser = WorkManagement.currentUser();
+        
+        formData.admin_id = currentUser.id;
+        
+        showLoading();
+        await apiCall('/users/create', {
+            method: 'POST',
+            data: JSON.stringify(formData)
+        });
+        
+        showAlert('success', 'User created successfully');
+        $('#createUserModal').modal('hide');
+        resetForm('createUserForm');
+        loadUsers();
+        
+    } catch (error) {
+        console.error('Error creating user:', error);
+        showAlert('danger', 'Error creating user');
+    } finally {
+        hideLoading();
+    }
+}
+
+async function updateUser() {
+    try {
+        const formData = getFormData('editUserForm');
+        const userId = $('#editUserForm').data('user-id');
+        const currentUser = WorkManagement.currentUser();
+        
+        formData.admin_id = currentUser.id;
+        
+        showLoading();
+        await apiCall(`/users/${userId}`, {
+            method: 'PUT',
+            data: JSON.stringify(formData)
+        });
+        
+        showAlert('success', 'User updated successfully');
+        $('#editUserModal').modal('hide');
+        loadUsers();
+        
+    } catch (error) {
+        console.error('Error updating user:', error);
+        showAlert('danger', 'Error updating user');
+    } finally {
+        hideLoading();
+    }
+}
+
+async function viewUserDetail(userId) {
+    try {
+        showLoading();
+        // ✅ SỬA: Gọi endpoint profile để lấy thông tin đầy đủ
+        const user = await apiCall(`/users/profile/${userId}`);
+        
+        // ✅ Kiểm tra structure của response
+        console.log('User profile data:', user);
+        
+        const content = `
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="text-center mb-4">
+                        <div class="avatar-xl bg-${getRoleColor(user.role)} text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 100px; height: 100px; font-size: 2rem;">
+                            ${user.name.charAt(0).toUpperCase()}
+                        </div>
+                        <h4>${user.name}</h4>
+                        <span class="badge bg-${getRoleColor(user.role)} fs-6">
+                            <i class="fas ${getRoleIcon(user.role)} me-2"></i>
+                            ${user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                        </span>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h6><i class="fas fa-info-circle me-2"></i>Basic Information</h6>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><strong>Employee Code:</strong></td>
+                                    <td>${user.employee_code || 'Not assigned'}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Email:</strong></td>
+                                    <td>${user.email}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Group:</strong></td>
+                                    <td>
+                                        ${user.group ? 
+                                            `<span class="badge bg-info">${user.group.name}</span>
+                                             <br><small class="text-muted">Leader: ${user.group.leader ? user.group.leader.name : 'No leader'}</small>
+                                             <br><small class="text-muted">Members: ${user.group.member_count || 0}</small>` : 
+                                            '<span class="text-muted">No group assigned</span>'
+                                        }
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Status:</strong></td>
+                                    <td>
+                                        <span class="badge bg-${user.is_active ? 'success' : 'danger'}">
+                                            <i class="fas fa-${user.is_active ? 'check' : 'times'} me-1"></i>
+                                            ${user.is_active ? 'Active' : 'Inactive'}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Join Date:</strong></td>
+                                    <td>${formatDate(user.created_at)}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <!-- ✅ SỬA: Sử dụng user.statistics thay vì trực tiếp từ user -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-tasks fa-2x mb-2"></i>
+                                    <h4>${user.statistics ? user.statistics.total_tasks : 0}</h4>
+                                    <small>Total Tasks</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-check-circle fa-2x mb-2"></i>
+                                    <h4>${user.statistics ? user.statistics.completed_tasks : 0}</h4>
+                                    <small>Completed</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-warning text-white">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-spinner fa-2x mb-2"></i>
+                                    <h4>${user.statistics ? user.statistics.in_progress_tasks : 0}</h4>
+                                    <small>In Progress</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-info text-white">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-clock fa-2x mb-2"></i>
+                                    <h4>${user.statistics ? user.statistics.todo_tasks : 0}</h4>
+                                    <small>To Do</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6><i class="fas fa-chart-bar me-2"></i>Performance Summary</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Task Completion Rate</label>
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar bg-success" style="width: ${user.statistics ? user.statistics.completion_rate.replace('%', '') : 0}%">
+                                        ${user.statistics ? user.statistics.completion_rate : '0%'}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row text-center">
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <h5 class="text-primary">${user.statistics ? user.statistics.uploaded_files : 0}</h5>
+                                            <small class="text-muted">Files Uploaded</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <h5 class="text-success">${user.statistics ? user.statistics.reports_created : 0}</h5>
+                                            <small class="text-muted">Reports Created</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <h5 class="text-info">${user.group ? user.group.member_count || 0 : 0}</h5>
+                                            <small class="text-muted">Group Members</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- ✅ THÊM: Recent Tasks Section -->
+                    ${user.recent_tasks && user.recent_tasks.length > 0 ? `
+                        <div class="card">
+                            <div class="card-header">
+                                <h6><i class="fas fa-history me-2"></i>Recent Tasks</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Title</th>
+                                                <th>Status</th>
+                                                <th>Priority</th>
+                                                <th>Updated</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${user.recent_tasks.map(task => `
+                                                <tr>
+                                                    <td>
+                                                        <div class="d-flex align-items-center">
+                                                            <span>${task.title}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td>${formatStatus(task.status)}</td>
+                                                    <td>${formatPriority(task.priority)}</td>
+                                                    <td>
+                                                        <small class="text-muted">
+                                                            ${task.updated_at ? formatDate(task.updated_at) : formatDate(task.created_at)}
+                                                        </small>
+                                                    </td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    ` : `
+                        <div class="card">
+                            <div class="card-body text-center text-muted">
+                                <i class="fas fa-tasks fa-3x mb-3"></i>
+                                <p>No recent tasks found</p>
+                            </div>
+                        </div>
+                    `}
+                </div>
+            </div>
+        `;
+        
+        $('#userDetailContent').html(content);
+        $('#userDetailTitle').text(`${user.name} - User Profile`);
+        $('#userDetailModal').modal('show');
+        
+    } catch (error) {
+        console.error('Error loading user detail:', error);
+        // ✅ Hiển thị thông báo lỗi chi tiết hơn
+        const errorMessage = error.responseJSON?.message || error.message || 'Error loading user detail';
+        showAlert('danger', errorMessage);
+    } finally {
+        hideLoading();
+    }
+}
+
+async function editUser(userId) {
+    try {
+        showLoading();
+        const user = await apiCall(`/users/${userId}`);
+        const groups = await apiCall('/groups/all');
+        
+        let groupOptions = '<option value="">No group</option>';
+        groups.forEach(group => {
+            const selected = user.group && user.group.id === group.id ? 'selected' : '';
+            groupOptions += `<option value="${group.id}" ${selected}>${group.name}</option>`;
+        });
+        
+        const formContent = `
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Full Name *</label>
+                    <input type="text" class="form-control" name="name" value="${user.name}" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Email *</label>
+                    <input type="email" class="form-control" name="email" value="${user.email}" required>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Employee Code</label>
+                    <input type="text" class="form-control" name="employee_code" value="${user.employee_code || ''}">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Role</label>
+                    <select class="form-control" name="role" required>
+                        <option value="employee" ${user.role === 'employee' ? 'selected' : ''}>Employee</option>
+                        <option value="leader" ${user.role === 'leader' ? 'selected' : ''}>Leader</option>
+                        <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Group</label>
+                    <select class="form-control" name="group_id">
+                        ${groupOptions}
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Status</label>
+                    <select class="form-control" name="is_active">
+                        <option value="true" ${user.is_active ? 'selected' : ''}>Active</option>
+                        <option value="false" ${!user.is_active ? 'selected' : ''}>Inactive</option>
+                    </select>
+                </div>
+            </div>
+        `;
+        
+        $('#editUserFormContent').html(formContent);
+        $('#editUserForm').data('user-id', userId);
+        $('#editUserModal').modal('show');
+        
+    } catch (error) {
+        console.error('Error loading user for edit:', error);
+        showAlert('danger', 'Error loading user for edit');
+    } finally {
+        hideLoading();
+    }
+}
+
+async function promoteUser(userId) {
+    if (!confirm('Are you sure you want to promote this user to Leader?')) return;
+    
+    try {
+        showLoading();
+        const currentUser = WorkManagement.currentUser();
+        
+        await apiCall(`/users/promote/${userId}`, {
+            method: 'PUT',
+            data: JSON.stringify({ admin_id: currentUser.id })
+        });
+        
+        showAlert('success', 'User promoted to Leader successfully');
+        loadUsers();
+        
+    } catch (error) {
+        console.error('Error promoting user:', error);
+        showAlert('danger', 'Error promoting user');
+    } finally {
+        hideLoading();
+    }
+}
+
+async function demoteUser(userId) {
+    if (!confirm('Are you sure you want to demote this user to Employee?')) return;
+    
+    try {
+        showLoading();
+        const currentUser = WorkManagement.currentUser();
+        
+        await apiCall(`/users/demote/${userId}`, {
+            method: 'PUT',
+            data: JSON.stringify({ admin_id: currentUser.id })
+        });
+        
+        showAlert('success', 'User demoted to Employee successfully');
+        loadUsers();
+        
+    } catch (error) {
+        console.error('Error demoting user:', error);
+        showAlert('danger', 'Error demoting user');
+    } finally {
+        hideLoading();
+    }
+}
+
+async function toggleUserStatus(userId, newStatus) {
+    const action = newStatus ? 'activate' : 'deactivate';
+    if (!confirm(`Are you sure you want to ${action} this user?`)) return;
+    
+    try {
+        showLoading();
+        const currentUser = WorkManagement.currentUser();
+        
+        await apiCall(`/users/${userId}`, {
+            method: 'PUT',
+            data: JSON.stringify({ 
+                admin_id: currentUser.id,
+                is_active: newStatus
+            })
+        });
+        
+        showAlert('success', `User ${action}d successfully`);
+        loadUsers();
+        
+    } catch (error) {
+        console.error(`Error ${action}ing user:`, error);
+        showAlert('danger', `Error ${action}ing user`);
+    } finally {
+        hideLoading();
+    }
+}
+
+async function deleteUser(userId) {
+    if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) return;
+    
+    try {
+        showLoading();
+        const currentUser = WorkManagement.currentUser();
+        
+        await apiCall(`/users/${userId}`, {
+            method: 'DELETE',
+            data: JSON.stringify({ admin_id: currentUser.id })
+        });
+        
+        showAlert('success', 'User deleted successfully');
+        loadUsers();
+        
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        showAlert('danger', 'Error deleting user');
+    } finally {
+        hideLoading();
+    }
+}
+
+async function exportUsers() {
+    try {
+        showLoading();
+        // This would typically generate and download a CSV/Excel file
+        showAlert('info', 'Export feature will be implemented');
+        
+    } catch (error) {
+        console.error('Error exporting users:', error);
+        showAlert('danger', 'Error exporting users');
+    } finally {
+        hideLoading();
+    }
+}
+
+// Utility function for debouncing search
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+</script>
+{% endblock %}

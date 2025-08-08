@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+
+{% block title %}Register - Work Management{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+    }
+    .auth-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 0;
+    }
+    .auth-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        max-width: 450px;
+        width: 100%;
+    }
+    .auth-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 20px 20px 0 0;
+        padding: 2rem;
+        text-align: center;
+    }
+    .auth-body {
+        padding: 2rem;
+    }
+    .form-control {
+        border-radius: 25px;
+        padding: 12px 20px;
+        border: 2px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    .btn-register {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        border: none;
+        border-radius: 25px;
+        padding: 12px 30px;
+        font-weight: 600;
+        color: white;
+        width: 100%;
+        transition: all 0.3s ease;
+    }
+    .btn-register:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+    .footer-text {
+        text-align: center;
+        margin-top: 1rem;
+        color: #6c757d;
+    }
+    .footer-text a {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 600;
+    }
+    .footer-text a:hover {
+        text-decoration: underline;
+    }
+    .admin-section {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h2><i class="fas fa-user-plus me-2"></i>Register</h2>
+            <p class="mb-0">Create your account</p>
+        </div>
+        
+        <div class="auth-body">
+            <form id="registerForm">
+                <div class="mb-3">
+                    <label for="name" class="form-label">
+                        <i class="fas fa-user me-2"></i>Full Name
+                    </label>
+                    <input type="text" class="form-control" id="name" name="name" required
+                           placeholder="Enter your full name">
+                </div>
+                
+                <div class="mb-3">
+                    <label for="email" class="form-label">
+                        <i class="fas fa-envelope me-2"></i>Email Address
+                    </label>
+                    <input type="email" class="form-control" id="email" name="email" required
+                           placeholder="Enter your email">
+                </div>
+                
+                <div class="mb-3">
+                    <label for="password" class="form-label">
+                        <i class="fas fa-lock me-2"></i>Password
+                    </label>
+                    <input type="password" class="form-control" id="password" name="password" required
+                           placeholder="Enter your password" minlength="6">
+                    <div class="form-text">Password must be at least 6 characters</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="role" class="form-label">
+                        <i class="fas fa-user-tag me-2"></i>Role
+                    </label>
+                    <select class="form-control" id="role" name="role" required>
+                        <option value="employee" selected>Employee</option>
+                        <option value="leader">Leader</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                
+                <!-- Admin Authorization Section -->
+                <div class="admin-section" id="adminSection">
+                    <h6><i class="fas fa-shield-alt me-2"></i>Admin Authorization Required</h6>
+                    <div class="mb-2">
+                        <label for="adminId" class="form-label">Admin User ID</label>
+                        <input type="number" class="form-control" id="adminId" name="admin_id"
+                               placeholder="Enter admin user ID">
+                    </div>
+                    <small class="text-muted">
+                        Only admins can create leader/admin accounts. Contact your administrator for the admin ID.
+                    </small>
+                </div>
+                
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-register">
+                        <i class="fas fa-user-plus me-2"></i>Register
+                    </button>
+                </div>
+            </form>
+            
+            <div class="footer-text">
+                <p>Already have an account? <a href="/login">Login here</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Spinner -->
+<div class="spinner-overlay">
+    <div class="spinner-border spinner-border-custom text-light" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Hide navigation for register page
+    $('.navbar').hide();
+    $('footer').hide();
+    
+    // Show/hide admin section based on role
+    $('#role').on('change', function() {
+        const role = $(this).val();
+        if (role === 'leader' || role === 'admin') {
+            $('#adminSection').show();
+            $('#adminId').attr('required', true);
+        } else {
+            $('#adminSection').hide();
+            $('#adminId').attr('required', false);
+        }
+    });
+    
+    // Register form submission
+    $('#registerForm').on('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = getFormData('registerForm');
+        
+        // Validation
+        if (!formData.name || !formData.email || !formData.password) {
+            showAlert('warning', 'Please fill in all required fields');
+            return;
+        }
+        
+        if (formData.password.length < 6) {
+            showAlert('warning', 'Password must be at least 6 characters');
+            return;
+        }
+        
+        if ((formData.role === 'leader' || formData.role === 'admin') && !formData.admin_id) {
+            showAlert('warning', 'Admin ID is required for leader/admin registration');
+            return;
+        }
+        
+        showLoading();
+        
+        try {
+            await register(formData);
+            showAlert('success', 'Registration successful! Redirecting to login...');
+            setTimeout(() => {
+                window.location.href = '/login';
+            }, 2000);
+        } catch (error) {
+            // Error already shown in register function
+        } finally {
+            hideLoading();
+        }
+    });
+    
+    // Email validation
+    $('#email').on('blur', function() {
+        const email = $(this).val();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (email && !emailRegex.test(email)) {
+            showAlert('warning', 'Please enter a valid email address');
+            $(this).focus();
+        }
+    });
+    
+    // Password strength indicator
+    $('#password').on('input', function() {
+        const password = $(this).val();
+        let strength = 0;
+        let feedback = '';
+        
+        if (password.length >= 6) strength++;
+        if (password.match(/[a-z]/)) strength++;
+        if (password.match(/[A-Z]/)) strength++;
+        if (password.match(/[0-9]/)) strength++;
+        if (password.match(/[^a-zA-Z0-9]/)) strength++;
+        
+        switch(strength) {
+            case 0:
+            case 1:
+                feedback = '<small class="text-danger">Weak password</small>';
+                break;
+            case 2:
+            case 3:
+                feedback = '<small class="text-warning">Medium password</small>';
+                break;
+            case 4:
+            case 5:
+                feedback = '<small class="text-success">Strong password</small>';
+                break;
+        }
+        
+        $(this).next('.form-text').html('Password must be at least 6 characters. ' + feedback);
+    });
+});
+</script>
+{% endblock %}

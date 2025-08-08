@@ -1,0 +1,1189 @@
+{% extends "base.html" %}
+
+{% block title %}Tasks - Work Management{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header with actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h2><i class="fas fa-tasks me-2"></i>Task Management</h2>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createTaskModal">
+                            <i class="fas fa-plus me-2"></i>Create Task
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters and Search -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-filter me-2"></i>Filters & Search</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Search by Title</label>
+                            <input type="text" class="form-control" id="searchTitle" placeholder="Enter task title...">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Status</label>
+                            <select class="form-control" id="filterStatus">
+                                <option value="">All Status</option>
+                                <option value="todo">To Do</option>
+                                <option value="doing">In Progress</option>
+                                <option value="done">Completed</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Priority</label>
+                            <select class="form-control" id="filterPriority">
+                                <option value="">All Priority</option>
+                                <option value="high">High</option>
+                                <option value="medium">Medium</option>
+                                <option value="low">Low</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Date From</label>
+                            <input type="date" class="form-control" id="filterDateFrom">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <button class="btn btn-secondary me-2" onclick="clearFilters()">
+                                <i class="fas fa-times"></i> Clear
+                            </button>
+                            <button class="btn btn-primary" onclick="applyFilters()">
+                                <i class="fas fa-search"></i> Apply Filters
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tasks Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5><i class="fas fa-list me-2"></i>Tasks</h5>
+                    <div class="d-flex align-items-center">
+                        <!-- ✅ THÊM: Sort Dropdown -->
+                        <div class="dropdown me-3">
+                            <button class="btn btn-sm btn-secondary dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-sort me-1"></i>Sort by
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="sortDropdown">
+                                <li><a class="dropdown-item active" href="#" onclick="sortTasks('created_desc')">
+                                    <i class="fas fa-clock me-2"></i>Newest First
+                                </a></li>
+                                <li><a class="dropdown-item" href="#" onclick="sortTasks('created_asc')">
+                                    <i class="fas fa-history me-2"></i>Oldest First
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#" onclick="sortTasks('deadline_asc')">
+                                    <i class="fas fa-calendar-alt me-2"></i>Deadline (Nearest)
+                                </a></li>
+                                <li><a class="dropdown-item" href="#" onclick="sortTasks('deadline_desc')">
+                                    <i class="fas fa-calendar-times me-2"></i>Deadline (Farthest)
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#" onclick="sortTasks('priority')">
+                                    <i class="fas fa-exclamation-circle me-2"></i>Priority (High to Low)
+                                </a></li>
+                                <li><a class="dropdown-item" href="#" onclick="sortTasks('title')">
+                                    <i class="fas fa-sort-alpha-down me-2"></i>Title (A-Z)
+                                </a></li>
+                            </ul>
+                        </div>
+                        
+                        <!-- View Toggle Buttons -->
+                        <div class="btn-group me-2">
+                            <button class="btn btn-sm btn-secondary" onclick="toggleView('table')" id="btnTableView">
+                                <i class="fas fa-table"></i> Table
+                            </button>
+                            <button class="btn btn-sm btn-secondary" onclick="toggleView('card')" id="btnCardView">
+                                <i class="fas fa-th"></i> Cards
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Table View -->
+                    <div id="tableView">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <!-- ✅ XÓA cột ID -->
+                                        <th>Title</th>
+                                        <th>Status</th>
+                                        <th>Priority</th>
+                                        <th>Assignee</th>
+                                        <th>Deadline</th>
+                                        <th>Progress</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tasksTableBody">
+                                    <tr>
+                                        <!-- ✅ Sửa colspan từ 8 về 7 -->
+                                        <td colspan="7" class="text-center">
+                                            <div class="spinner-border" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <div id="paginationInfo" class="text-muted">
+                                Showing 0 tasks
+                            </div>
+                            <nav aria-label="Tasks pagination">
+                                <ul class="pagination pagination-sm mb-0" id="tasksPagination">
+                                    <!-- Pagination items will be generated here -->
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+
+                    <!-- Card View -->
+                    <div id="cardView" style="display: none;">
+                        <div class="row" id="tasksCardContainer">
+                            <div class="col-12 text-center">
+                                <div class="spinner-border" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <div id="paginationInfoCard" class="text-muted">
+                                Showing 0 tasks
+                            </div>
+                            <nav aria-label="Tasks pagination">
+                                <ul class="pagination pagination-sm mb-0" id="tasksCardPagination">
+                                    <!-- Pagination items will be generated here -->
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Task Modal -->
+<div class="modal fade" id="createTaskModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-plus me-2"></i>Create New Task</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="createTaskForm">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label class="form-label">Task Title *</label>
+                            <input type="text" class="form-control" name="title" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Priority</label>
+                            <select class="form-control" name="priority">
+                                <option value="medium">Medium</option>
+                                <option value="low">Low</option>
+                                <option value="high">High</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" name="description" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Status</label>
+                            <select class="form-control" name="status">
+                                <option value="todo">To Do</option>
+                                <option value="doing">In Progress</option>
+                                <option value="done">Completed</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Deadline</label>
+                            <input type="date" class="form-control" name="deadline">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Task Detail Modal -->
+<div class="modal fade" id="taskDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="taskDetailTitle">Task Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="taskDetailContent">
+                    <!-- Content will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Task Modal -->
+<div class="modal fade" id="editTaskModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-edit me-2"></i>Edit Task</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editTaskForm">
+                <div class="modal-body" id="editTaskFormContent">
+                    <!-- Form content will be loaded here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentTasks = [];
+let filteredTasks = [];
+let currentView = 'table';
+let currentPage = 1;
+let tasksPerPage = 10;
+let isFiltering = false;
+let currentSort = 'created_desc';
+
+$(document).ready(function() {
+    loadTasks();
+    loadSelectOptions();
+    setupEventHandlers();
+    
+    setInterval(function() {
+        if (!isFiltering) {
+            console.log('Auto-refreshing tasks...');
+            loadTasks();
+        } else {
+            console.log('Skip auto-refresh - user is filtering');
+        }
+    }, 300000);
+});
+
+function sortTasks(sortType) {
+    currentSort = sortType;
+    
+    // Update dropdown active state
+    $('#sortDropdown').next('.dropdown-menu').find('.dropdown-item').removeClass('active');
+    $(`[onclick="sortTasks('${sortType}')"]`).addClass('active');
+    
+    // Update dropdown button text
+    const sortTexts = {
+        'created_desc': 'Newest First',
+        'created_asc': 'Oldest First', 
+        'deadline_asc': 'Deadline (Nearest)',
+        'deadline_desc': 'Deadline (Farthest)',
+        'priority': 'Priority (High to Low)',
+        'title': 'Title (A-Z)'
+    };
+    
+    $('#sortDropdown').html(`<i class="fas fa-sort me-1"></i>${sortTexts[sortType]}`);
+    
+    // Apply sort to current tasks
+    const tasksToSort = isFiltering ? filteredTasks : currentTasks;
+    const sortedTasks = applySortToTasks([...tasksToSort], sortType);
+    
+    if (isFiltering) {
+        filteredTasks = sortedTasks;
+    } else {
+        currentTasks = sortedTasks;
+        filteredTasks = [...currentTasks];
+    }
+    
+    // Reset to page 1 and display
+    currentPage = 1;
+    displayTasksWithPagination(sortedTasks);
+}
+
+function applySortToTasks(tasks, sortType) {
+    return tasks.sort((a, b) => {
+        switch (sortType) {
+            case 'created_desc':
+                return new Date(b.created_at) - new Date(a.created_at);
+            
+            case 'created_asc':
+                return new Date(a.created_at) - new Date(b.created_at);
+            
+            case 'deadline_asc':
+                // Tasks with deadlines first, then no deadline
+                if (!a.deadline && !b.deadline) return 0;
+                if (!a.deadline) return 1;
+                if (!b.deadline) return -1;
+                return new Date(a.deadline) - new Date(b.deadline);
+            
+            case 'deadline_desc':
+                // Tasks with deadlines first, then no deadline  
+                if (!a.deadline && !b.deadline) return 0;
+                if (!a.deadline) return 1;
+                if (!b.deadline) return -1;
+                return new Date(b.deadline) - new Date(a.deadline);
+            
+            case 'priority':
+                const priorityOrder = { 'high': 3, 'medium': 2, 'low': 1 };
+                return (priorityOrder[b.priority] || 0) - (priorityOrder[a.priority] || 0);
+            
+            case 'title':
+                return a.title.localeCompare(b.title);
+            
+            default:
+                return 0;
+        }
+    });
+}
+
+function setupEventHandlers() {
+    // ✅ Auto-apply filters on change (giống như trang reports)
+    $('#searchTitle').on('input', debounce(function() {
+        isFiltering = $('#searchTitle').val().length > 0;
+        applyFilters();
+    }, 500));
+    
+    $('#filterStatus').on('change', function() {
+        isFiltering = $(this).val() !== '';
+        applyFilters();
+    });
+    
+    $('#filterPriority').on('change', function() {
+        isFiltering = $(this).val() !== '';
+        applyFilters();
+    });
+    
+    $('#filterDateFrom').on('change', function() {
+        isFiltering = $(this).val() !== '';
+        applyFilters();
+    });
+    
+    $('#filterDateTo').on('change', function() {
+        isFiltering = $(this).val() !== '';
+        applyFilters();
+    });
+    
+    // Create task form submission
+    $('#createTaskForm').on('submit', async function(e) {
+        e.preventDefault();
+        await createTask();
+    });
+    
+    // Edit task form submission
+    $('#editTaskForm').on('submit', async function(e) {
+        e.preventDefault();
+        await updateTask();
+    });
+}
+
+async function loadTasks() {
+    try {
+        showLoading();
+        const user = WorkManagement.currentUser();
+        
+        // ✅ SỬA: Luôn luôn gửi user_id để backend biết quyền của user
+        let endpoint = `/tasks/all?user_id=${user.id}`;
+        
+        console.log('Loading tasks from:', endpoint);
+        console.log('Current user:', user);
+        
+        const response = await apiCall(endpoint);
+        console.log('Raw API response:', response);
+        
+        let tasksData;
+        if (response && response.tasks) {
+            tasksData = response.tasks;
+        } else if (Array.isArray(response)) {
+            tasksData = response;
+        } else {
+            tasksData = [];
+        }
+        
+        currentTasks = applySortToTasks(tasksData, currentSort);
+        
+        if (!isFiltering) {
+            filteredTasks = [...currentTasks];
+            currentPage = 1;
+            displayTasksWithPagination(filteredTasks);
+        }
+        
+        console.log(`✅ Loaded ${currentTasks.length} tasks for ${user.role}: ${user.name}`);
+        
+    } catch (error) {
+        console.error('Error loading tasks:', error);
+        showAlert('danger', 'Error loading tasks');
+        currentTasks = [];
+        if (!isFiltering) {
+            filteredTasks = [];
+            displayTasksWithPagination([]);
+        }
+    } finally {
+        hideLoading();
+    }
+}
+
+async function loadSelectOptions() {
+    try {
+        const user = WorkManagement.currentUser();
+        
+        // ✅ XÓA phần load groups vì không cần chọn group
+        
+        // Load parent task options - chỉ tasks của chính user
+        await loadParentTaskOptions();
+        
+    } catch (error) {
+        console.error('Error loading select options:', error);
+        showAlert('warning', 'Some options could not be loaded');
+    }
+}
+
+async function loadParentTaskOptions() {
+    try {
+        const user = WorkManagement.currentUser();
+        let endpoint = '/tasks/parent-options';
+        
+        // ✅ Chỉ load tasks mà user là assignee (tasks của chính mình)
+        const params = new URLSearchParams();
+        params.append('assignee_id', user.id);
+        params.append('status', 'todo,doing'); // Chỉ tasks chưa hoàn thành
+        
+        endpoint += `?${params.toString()}`;
+        
+        console.log('Loading parent tasks from:', endpoint);
+        
+        const tasks = await apiCall(endpoint);
+        const parentSelect = $('#parentTaskSelect');
+        
+        parentSelect.empty().append('<option value="">None (Main task)</option>');
+        
+        if (Array.isArray(tasks)) {
+            tasks.forEach(task => {
+                parentSelect.append(`<option value="${task.id}">${task.title} (${task.status})</option>`);
+            });
+        }
+        
+        console.log(`Loaded ${tasks.length} parent task options`);
+        
+    } catch (error) {
+        console.error('Error loading parent task options:', error);
+    }
+}
+
+function displayTasks(tasks) {
+    filteredTasks = tasks;
+    currentPage = 1; // Reset về trang 1
+    displayTasksWithPagination(tasks);
+}
+
+function displayTasksTable(tasks) {
+    const tbody = $('#tasksTableBody');
+    tbody.empty();
+    
+    if (tasks.length === 0) {
+        // ✅ Sửa colspan từ 8 về 7
+        tbody.append('<tr><td colspan="7" class="text-center text-muted">No tasks found</td></tr>');
+        return;
+    }
+    
+    tasks.forEach(task => {
+        const progress = calculateProgress(task);
+        const isOverdue = task.deadline && new Date(task.deadline) < new Date() && task.status !== 'done';
+        
+        const row = `
+            <tr class="${isOverdue ? 'table-warning' : ''}">
+                <!-- ✅ XÓA cột ID, thay vào đó thêm badge vào title -->
+                <td>
+                    <div class="d-flex align-items-center">
+                        
+                        <div>
+                            <strong>${task.title}</strong>
+                            ${isOverdue ? '<i class="fas fa-exclamation-triangle text-warning ms-2" title="Overdue"></i>' : ''}
+                            ${task.parent_task_id ? '<i class="fas fa-level-down-alt text-info ms-1" title="Subtask"></i>' : ''}
+                        </div>
+                    </div>
+                    ${task.description ? `<small class="text-muted d-block mt-1">${task.description.substring(0, 80)}${task.description.length > 80 ? '...' : ''}</small>` : ''}
+                </td>
+                <td>${formatStatus(task.status)}</td>
+                <td>${formatPriority(task.priority)}</td>
+                <td>
+                    ${task.assignee ? 
+                        `<div class="d-flex align-items-center">
+                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px; font-size: 14px;">
+                                ${task.assignee.name.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                                <div class="fw-bold">${task.assignee.name}</div>
+                                <small class="text-muted">${task.assignee.employee_code || ''}</small>
+                            </div>
+                        </div>` : 
+                        '<span class="text-muted">Unassigned</span>'
+                    }
+                </td>
+                <td>
+                    ${task.deadline ? 
+                        `<div class="${isOverdue ? 'text-danger fw-bold' : ''}">${formatDate(task.deadline)}</div>` : 
+                        '<span class="text-muted">No deadline</span>'
+                    }
+                </td>
+                <td>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar ${progress === 100 ? 'bg-success' : progress >= 50 ? 'bg-warning' : 'bg-info'}" 
+                             style="width: ${progress}%"></div>
+                    </div>
+                    <small>${progress}%</small>
+                </td>
+                <td>
+                    <div class="btn-group" role="group">
+                        <button class="btn btn-sm btn-outline-primary" onclick="viewTaskDetail(${task.id})" title="View Details">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-warning" onclick="editTask(${task.id})" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <div class="btn-group" role="group">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#" onclick="updateTaskStatus(${task.id}, 'todo')">
+                                    <i class="fas fa-clock text-info me-2"></i>Set To Do
+                                </a></li>
+                                <li><a class="dropdown-item" href="#" onclick="updateTaskStatus(${task.id}, 'doing')">
+                                    <i class="fas fa-spinner text-warning me-2"></i>Set In Progress
+                                </a></li>
+                                <li><a class="dropdown-item" href="#" onclick="updateTaskStatus(${task.id}, 'done')">
+                                    <i class="fas fa-check text-success me-2"></i>Mark Complete
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="#" onclick="deleteTask(${task.id})">
+                                    <i class="fas fa-trash me-2"></i>Delete
+                                </a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        `;
+        tbody.append(row);
+    });
+}
+
+function displayTasksCards(tasks) {
+    const container = $('#tasksCardContainer');
+    container.empty();
+    
+    if (tasks.length === 0) {
+        container.append('<div class="col-12 text-center text-muted">No tasks found</div>');
+        return;
+    }
+    
+    tasks.forEach(task => {
+        const progress = calculateProgress(task);
+        const isOverdue = task.deadline && new Date(task.deadline) < new Date() && task.status !== 'done';
+        
+        const card = `
+            <div class="col-md-6 col-lg-4 mb-3">
+                <div class="card h-100 ${isOverdue ? 'border-warning' : ''}">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            
+                            ${formatStatus(task.status)}
+                            ${formatPriority(task.priority)}
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="dropdown">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#" onclick="viewTaskDetail(${task.id})">
+                                    <i class="fas fa-eye me-2"></i>View Details
+                                </a></li>
+                                <li><a class="dropdown-item" href="#" onclick="editTask(${task.id})">
+                                    <i class="fas fa-edit me-2"></i>Edit
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="#" onclick="deleteTask(${task.id})">
+                                    <i class="fas fa-trash me-2"></i>Delete
+                                </a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h6 class="card-title">${task.title}</h6>
+                        <p class="card-text text-muted">${task.description ? (task.description.length > 100 ? task.description.substring(0, 100) + '...' : task.description) : 'No description'}</p>
+                        
+                        <div class="mb-2">
+                            <small class="text-muted">Progress:</small>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar ${progress === 100 ? 'bg-success' : 'bg-primary'}" 
+                                     style="width: ${progress}%"></div>
+                            </div>
+                            <small>${progress}%</small>
+                        </div>
+                        
+                        ${task.assignee ? `
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 28px; height: 28px; font-size: 12px;">
+                                    ${task.assignee.name.charAt(0).toUpperCase()}
+                                </div>
+                                <small>${task.assignee.name}</small>
+                            </div>
+                        ` : ''}
+                        
+                        ${task.deadline ? `
+                            <div class="text-end">
+                                <small class="${isOverdue ? 'text-danger fw-bold' : 'text-muted'}">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    ${formatDate(task.deadline)}
+                                </small>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+        container.append(card);
+    });
+}
+
+function calculateProgress(task) {
+    if (task.status === 'done') return 100;
+    if (task.status === 'doing') return 50;
+    return 10; // todo
+}
+
+function toggleView(view) {
+    currentView = view;
+    
+    $('#btnTableView, #btnCardView').removeClass('btn-primary').addClass('btn-secondary');
+    
+    if (view === 'table') {
+        $('#tableView').show();
+        $('#cardView').hide();
+        $('#btnTableView').removeClass('btn-secondary').addClass('btn-primary');
+    } else {
+        $('#tableView').hide();
+        $('#cardView').show();
+        $('#btnCardView').removeClass('btn-secondary').addClass('btn-primary');
+    }
+    
+    const tasksToDisplay = isFiltering ? filteredTasks : currentTasks;
+    displayTasksWithPagination(tasksToDisplay);
+}
+
+function applyFilters() {
+    const filters = {
+        title: $('#searchTitle').val(),
+        status: $('#filterStatus').val(),
+        priority: $('#filterPriority').val(),
+        date_from: $('#filterDateFrom').val(),
+        date_to: $('#filterDateTo').val()
+    };
+    
+    // Cập nhật filtering state
+    isFiltering = filters.title || filters.status || filters.priority || filters.date_from || filters.date_to;
+    
+    let filtered = [...currentTasks];
+    
+    // Apply filters
+    if (filters.title) {
+        filtered = filtered.filter(task => 
+            task.title.toLowerCase().includes(filters.title.toLowerCase())
+        );
+    }
+    
+    if (filters.status) {
+        filtered = filtered.filter(task => task.status === filters.status);
+    }
+    
+    if (filters.priority) {
+        filtered = filtered.filter(task => task.priority === filters.priority);
+    }
+    
+    if (filters.date_from) {
+        const fromDate = new Date(filters.date_from);
+        filtered = filtered.filter(task => {
+            if (!task.created_at) return false;
+            const taskDate = new Date(task.created_at);
+            return taskDate >= fromDate;
+        });
+    }
+    
+    if (filters.date_to) {
+        const toDate = new Date(filters.date_to);
+        toDate.setHours(23, 59, 59, 999);
+        filtered = filtered.filter(task => {
+            if (!task.created_at) return false;
+            const taskDate = new Date(task.created_at);
+            return taskDate <= toDate;
+        });
+    }
+    
+    filtered = applySortToTasks(filtered, currentSort);
+    
+    filteredTasks = filtered;
+    currentPage = 1;
+    displayTasksWithPagination(filteredTasks);
+}
+
+function clearFilters() {
+    $('#searchTitle').val('');
+    $('#filterStatus').val('');
+    $('#filterPriority').val('');
+    $('#filterDateFrom').val('');
+    $('#filterDateTo').val('');
+    
+    // ✅ Reset filtering state và hiển thị all tasks
+    isFiltering = false;
+    filteredTasks = [...currentTasks];
+    currentPage = 1;
+    displayTasksWithPagination(filteredTasks);
+}
+
+function displayTasksWithPagination(tasks) {
+    const totalTasks = tasks.length;
+    const totalPages = Math.ceil(totalTasks / tasksPerPage);
+    const startIndex = (currentPage - 1) * tasksPerPage;
+    const endIndex = startIndex + tasksPerPage;
+    const tasksToShow = tasks.slice(startIndex, endIndex);
+    
+    // Hiển thị tasks cho trang hiện tại
+    if (currentView === 'table') {
+        displayTasksTable(tasksToShow);
+        updatePaginationInfo(totalTasks, startIndex, endIndex, 'paginationInfo');
+        generatePagination(totalPages, 'tasksPagination');
+    } else {
+        displayTasksCards(tasksToShow);
+        updatePaginationInfo(totalTasks, startIndex, endIndex, 'paginationInfoCard');
+        generatePagination(totalPages, 'tasksCardPagination');
+    }
+}
+
+function updatePaginationInfo(total, start, end, elementId) {
+    const showing = Math.min(end, total);
+    const text = total > 0 ? 
+        `Showing ${start + 1}-${showing} of ${total} tasks` : 
+        'No tasks found';
+    $(`#${elementId}`).text(text);
+}
+
+function generatePagination(totalPages, elementId) {
+    const pagination = $(`#${elementId}`);
+    pagination.empty();
+    
+    if (totalPages <= 1) return;
+    
+    // Previous button
+    pagination.append(`
+        <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+            <a class="page-link" href="#" onclick="changePage(${currentPage - 1})" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+    `);
+    
+    // Page numbers
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    
+    // Adjust start if we're near the end
+    if (endPage - startPage + 1 < maxVisiblePages) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+        pagination.append(`
+            <li class="page-item ${i === currentPage ? 'active' : ''}">
+                <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
+            </li>
+        `);
+    }
+    
+    // Next button
+    pagination.append(`
+        <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+            <a class="page-link" href="#" onclick="changePage(${currentPage + 1})" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+    `);
+}
+
+function changePage(page) {
+    const totalTasks = isFiltering ? filteredTasks.length : currentTasks.length;
+    const totalPages = Math.ceil(totalTasks / tasksPerPage);
+    
+    if (page < 1 || page > totalPages) return;
+    
+    currentPage = page;
+    const tasksToDisplay = isFiltering ? filteredTasks : currentTasks;
+    displayTasksWithPagination(tasksToDisplay);
+}
+
+async function createTask() {
+    try {
+        const formData = getFormData('createTaskForm');
+        const user = WorkManagement.currentUser();
+        
+        // Validate required fields
+        if (!formData.title || formData.title.trim() === '') {
+            showAlert('warning', 'Task title is required');
+            return;
+        }
+        
+        // ✅ Tự động gán task cho chính user hiện tại, không có group
+        const taskData = {
+            title: formData.title.trim(),
+            description: formData.description || '',
+            priority: formData.priority || 'medium',
+            status: formData.status || 'todo',
+            deadline: formData.deadline || null, // ✅ Chỉ ngày (YYYY-MM-DD)
+            parent_task_id: formData.parent_task_id || null,
+            // ✅ XÓA group_id - task sẽ là personal task
+            
+            // ✅ Tự động set assignee và assigner là chính user hiện tại
+            assignee_id: user.id,
+            assigner_id: user.id
+        };
+        
+        console.log('Creating task with data:', taskData);
+        
+        showLoading();
+        const response = await apiCall('/tasks/create', {
+            method: 'POST',
+            data: JSON.stringify(taskData)
+        });
+        
+        showAlert('success', 'Task created successfully');
+        $('#createTaskModal').modal('hide');
+        resetForm('createTaskForm');
+        
+        // Reload tasks and parent options
+        await loadTasks();
+        await loadParentTaskOptions(); // Refresh parent options để include task mới
+        
+    } catch (error) {
+        console.error('Error creating task:', error);
+        const message = error.responseJSON?.message || 'Error creating task';
+        showAlert('danger', message);
+    } finally {
+        hideLoading();
+    }
+}
+
+async function updateTask() {
+    try {
+        const formData = getFormData('editTaskForm');
+        const taskId = $('#editTaskForm').data('task-id');
+        
+        if (!formData.title) {
+            showAlert('warning', 'Task title is required');
+            return;
+        }
+        
+        showLoading();
+        await apiCall(`/tasks/${taskId}`, {
+            method: 'PUT',
+            data: JSON.stringify(formData)
+        });
+        
+        showAlert('success', 'Task updated successfully');
+        $('#editTaskModal').modal('hide');
+        loadTasks();
+        
+    } catch (error) {
+        console.error('Error updating task:', error);
+        showAlert('danger', 'Error updating task');
+    } finally {
+        hideLoading();
+    }
+}
+
+async function updateTaskStatus(taskId, status) {
+    try {
+        showLoading();
+        await apiCall(`/tasks/${taskId}`, {
+            method: 'PUT',
+            data: JSON.stringify({ status })
+        });
+        
+        showAlert('success', `Task status updated to ${status}`);
+        loadTasks();
+        
+    } catch (error) {
+        console.error('Error updating task status:', error);
+        showAlert('danger', 'Error updating task status');
+    } finally {
+        hideLoading();
+    }
+}
+
+async function deleteTask(taskId) {
+    if (!confirm('Are you sure you want to delete this task?')) return;
+    
+    try {
+        showLoading();
+        await apiCall(`/tasks/${taskId}`, {
+            method: 'DELETE'
+        });
+        
+        showAlert('success', 'Task deleted successfully');
+        loadTasks();
+        
+    } catch (error) {
+        console.error('Error deleting task:', error);
+        showAlert('danger', 'Error deleting task');
+    } finally {
+        hideLoading();
+    }
+}
+
+async function viewTaskDetail(taskId) {
+    try {
+        showLoading();
+        const task = await apiCall(`/tasks/${taskId}`);
+        
+        const content = `
+            <div class="row">
+                <div class="col-md-8">
+                    <h4>${task.title}</h4>
+                    <p class="text-muted">${task.description || 'No description'}</p>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <strong>Status:</strong><br>
+                            ${formatStatus(task.status)}
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Priority:</strong><br>
+                            ${formatPriority(task.priority)}
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Progress:</strong><br>
+                            <div class="progress mt-1" style="height: 6px;">
+                                <div class="progress-bar bg-primary" style="width: ${calculateProgress(task)}%"></div>
+                            </div>
+                            ${calculateProgress(task)}%
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Deadline:</strong><br>
+                            ${task.deadline ? formatDate(task.deadline) : 'No deadline'}
+                        </div>
+                    </div>
+                    
+                    ${task.subtasks && task.subtasks.length > 0 ? `
+                        <h6>Subtasks (${task.subtasks.length}):</h6>
+                        <ul class="list-group mb-3">
+                            ${task.subtasks.map(subtask => `
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>${subtask.title}</span>
+                                    ${formatStatus(subtask.status)}
+                                </li>
+                            `).join('')}
+                        </ul>
+                    ` : ''}
+                </div>
+                <div class="col-md-4">
+                    <h6>Task Information</h6>
+                    <table class="table table-sm">
+                        <tr>
+                            <td><strong>ID:</strong></td>
+                            <td>#${task.id}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Assignee:</strong></td>
+                            <td>${task.assignee ? task.assignee.name : 'Unassigned'}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Assigner:</strong></td>
+                            <td>${task.assigner ? task.assigner.name : 'N/A'}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Group:</strong></td>
+                            <td>${task.group ? task.group.name : 'No group'}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Created:</strong></td>
+                            <td>${formatDate(task.created_at)}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Updated:</strong></td>
+                            <td>${formatDate(task.updated_at)}</td>
+                        </tr>
+                    </table>
+                    
+                    ${task.files && task.files.length > 0 ? `
+                        <h6>Files (${task.files.length})</h6>
+                        <ul class="list-group">
+                            ${task.files.map(file => `
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>${file.filename}</span>
+                                    <a href="/api/files/download/${file.id}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+        
+        $('#taskDetailContent').html(content);
+        $('#taskDetailTitle').text(`Task #${task.id} - ${task.title}`);
+        $('#taskDetailModal').modal('show');
+        
+    } catch (error) {
+        console.error('Error loading task detail:', error);
+        showAlert('danger', 'Error loading task detail');
+    } finally {
+        hideLoading();
+    }
+}
+
+async function editTask(taskId) {
+    try {
+        showLoading();
+        const task = await apiCall(`/tasks/${taskId}`);
+        
+        // ✅ Format deadline để chỉ lấy phần date (YYYY-MM-DD)
+        let deadlineValue = '';
+        if (task.deadline) {
+            const deadlineDate = new Date(task.deadline);
+            deadlineValue = deadlineDate.toISOString().split('T')[0]; // Chỉ lấy phần YYYY-MM-DD
+        }
+        
+        const formContent = `
+            <div class="row">
+                <div class="col-md-8 mb-3">
+                    <label class="form-label">Task Title *</label>
+                    <input type="text" class="form-control" name="title" value="${task.title}" required>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Priority</label>
+                    <select class="form-control" name="priority">
+                        <option value="low" ${task.priority === 'low' ? 'selected' : ''}>Low</option>
+                        <option value="medium" ${task.priority === 'medium' ? 'selected' : ''}>Medium</option>
+                        <option value="high" ${task.priority === 'high' ? 'selected' : ''}>High</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">Description</label>
+                <textarea class="form-control" name="description" rows="3">${task.description || ''}</textarea>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Status</label>
+                    <select class="form-control" name="status">
+                        <option value="todo" ${task.status === 'todo' ? 'selected' : ''}>To Do</option>
+                        <option value="doing" ${task.status === 'doing' ? 'selected' : ''}>In Progress</option>
+                        <option value="done" ${task.status === 'done' ? 'selected' : ''}>Completed</option>
+                    </select>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Deadline</label>
+                    <input type="date" class="form-control" name="deadline" value="${deadlineValue}">
+                </div>
+            </div>
+        `;
+        
+        $('#editTaskFormContent').html(formContent);
+        $('#editTaskForm').data('task-id', taskId);
+        
+        // ✅ Load parent task options for edit modal
+        await loadParentTaskOptionsForEdit(task.parent_task_id);
+        
+        $('#editTaskModal').modal('show');
+        
+    } catch (error) {
+        console.error('Error loading task for edit:', error);
+        showAlert('danger', 'Error loading task for edit');
+    } finally {
+        hideLoading();
+    }
+}
+
+async function loadParentTaskOptionsForEdit(currentParentId) {
+    try {
+        const user = WorkManagement.currentUser();
+        let endpoint = '/tasks/parent-options';
+        
+        const params = new URLSearchParams();
+        params.append('assignee_id', user.id);
+        params.append('status', 'todo,doing');
+        
+        endpoint += `?${params.toString()}`;
+        
+        const tasks = await apiCall(endpoint);
+        const parentSelect = $('#editParentTaskSelect');
+        
+        parentSelect.empty().append('<option value="">None (Main task)</option>');
+        
+        if (Array.isArray(tasks)) {
+            tasks.forEach(task => {
+                const selected = task.id == currentParentId ? 'selected' : '';
+                parentSelect.append(`<option value="${task.id}" ${selected}>${task.title} (${task.status})</option>`);
+            });
+        }
+        
+    } catch (error) {
+        console.error('Error loading parent task options for edit:', error);
+    }
+}
+
+// Utility function for debouncing search
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+</script>
+{% endblock %}

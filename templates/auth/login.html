@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Work Management{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+    }
+    .auth-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .auth-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        max-width: 400px;
+        width: 100%;
+    }
+    .auth-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 20px 20px 0 0;
+        padding: 2rem;
+        text-align: center;
+    }
+    .auth-body {
+        padding: 2rem;
+    }
+    .form-control {
+        border-radius: 25px;
+        padding: 12px 20px;
+        border: 2px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    .btn-login {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        border-radius: 25px;
+        padding: 12px 30px;
+        font-weight: 600;
+        color: white;
+        width: 100%;
+        transition: all 0.3s ease;
+    }
+    .btn-login:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+    .footer-text {
+        text-align: center;
+        margin-top: 1rem;
+        color: #6c757d;
+    }
+    .footer-text a {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 600;
+    }
+    .footer-text a:hover {
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h2><i class="fas fa-sign-in-alt me-2"></i>Login</h2>
+            <p class="mb-0">Welcome to Work Management System</p>
+        </div>
+        
+        <div class="auth-body">
+            <form id="loginForm">
+                <div class="mb-3">
+                    <label for="email" class="form-label">
+                        <i class="fas fa-envelope me-2"></i>Email Address
+                    </label>
+                    <input type="email" class="form-control" id="email" name="email" required
+                           placeholder="Enter your email">
+                </div>
+                
+                <div class="mb-3">
+                    <label for="password" class="form-label">
+                        <i class="fas fa-lock me-2"></i>Password
+                    </label>
+                    <input type="password" class="form-control" id="password" name="password" required
+                           placeholder="Enter your password">
+                </div>
+                
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-login">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                    </button>
+                </div>
+            </form>
+            
+            <div class="footer-text">
+                <p>Don't have an account? <a href="/register">Register here</a></p>
+                <small class="text-muted">
+                    Demo: admin@company.com / admin123
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Spinner -->
+<div class="spinner-overlay">
+    <div class="spinner-border spinner-border-custom text-light" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Hide navigation for login page
+    $('.navbar').hide();
+    $('footer').hide();
+    
+    // Login form submission
+    $('#loginForm').on('submit', async function(e) {
+        e.preventDefault();
+        
+        const email = $('#email').val();
+        const password = $('#password').val();
+        
+        if (!email || !password) {
+            showAlert('warning', 'Please fill in all fields');
+            return;
+        }
+        
+        showLoading();
+        
+        try {
+            await login(email, password);
+            // Redirect will be handled in login function
+            window.location.href = '/dashboard';
+        } catch (error) {
+            // Error already shown in login function
+        } finally {
+            hideLoading();
+        }
+    });
+    
+    // Demo credentials auto-fill
+    $(document).on('keydown', function(e) {
+        if (e.ctrlKey && e.key === 'd') {
+            e.preventDefault();
+            $('#email').val('admin@company.com');
+            $('#password').val('admin123');
+            showAlert('info', 'Demo credentials filled');
+        }
+    });
+});
+</script>
+{% endblock %}

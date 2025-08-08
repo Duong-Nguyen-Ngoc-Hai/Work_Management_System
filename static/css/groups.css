@@ -1,0 +1,350 @@
+/* Groups specific styles */
+
+.group-card {
+    transition: all 0.3s ease;
+}
+
+.group-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.group-stats {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 10px;
+    padding: 1rem;
+}
+
+.member-avatar {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-weight: bold;
+    color: white;
+}
+
+.progress-sm {
+    height: 6px;
+}
+
+.badge-role {
+    font-size: 0.75rem;
+}
+
+.member-card {
+    border-left: 4px solid var(--primary-color);
+}
+
+.group-leader-badge {
+    background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    border: none;
+}
+
+.completion-ring {
+    position: relative;
+    display: inline-block;
+}
+
+.completion-ring svg {
+    transform: rotate(-90deg);
+}
+
+.completion-ring .completion-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .group-card .card-body {
+        padding: 1rem 0.75rem;
+    }
+    
+    .member-avatar {
+        width: 35px;
+        height: 35px;
+        font-size: 0.8rem;
+    }
+}
+
+/* Animation for group cards */
+.group-card {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Status indicators */
+.status-active {
+    background-color: #28a745;
+}
+
+.status-inactive {
+    background-color: #ffc107;
+}
+
+.status-full {
+    background-color: #dc3545;
+}
+
+/* Member management styles */
+.member-list-item {
+    padding: 0.75rem;
+    border-bottom: 1px solid #dee2e6;
+    transition: background-color 0.2s ease;
+}
+
+.member-list-item:hover {
+    background-color: #f8f9fa;
+}
+
+.member-list-item:last-child {
+    border-bottom: none;
+}
+
+/* Group creation form enhancements */
+.form-floating-custom {
+    position: relative;
+}
+
+.form-floating-custom .form-control {
+    height: calc(3.5rem + 2px);
+    padding: 1rem 0.75rem;
+}
+
+.form-floating-custom .form-label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    padding: 1rem 0.75rem;
+    pointer-events: none;
+    border: 1px solid transparent;
+    transform-origin: 0 0;
+    transition: opacity 0.1s ease-in-out, transform 0.1s ease-in-out;
+}
+
+/* Join group modal enhancements */
+.join-group-preview {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 10px;
+    padding: 1.5rem;
+}
+
+.join-group-preview .badge {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+/* Group details modal */
+.group-details-stats {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 0.5rem;
+}
+
+.stat-number {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+/* Action dropdown styling */
+.dropdown-menu .dropdown-item {
+    padding: 0.5rem 1rem;
+    transition: all 0.2s ease;
+}
+
+.dropdown-menu .dropdown-item:hover {
+    background-color: #f8f9fa;
+    transform: translateX(2px);
+}
+
+.dropdown-menu .dropdown-item.text-danger:hover {
+    background-color: #fee;
+    color: #dc3545 !important;
+}
+
+.dropdown-menu .dropdown-item i {
+    width: 16px;
+    text-align: center;
+}
+
+/* Transfer modal styling */
+#transferMemberModal .alert {
+    margin-bottom: 1rem;
+}
+
+#transferMemberModal .form-text {
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+/* Crown icon animation */
+.fas.fa-crown {
+    animation: crown-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes crown-glow {
+    from {
+        text-shadow: 0 0 5px rgba(255, 193, 7, 0.5);
+    }
+    to {
+        text-shadow: 0 0 10px rgba(255, 193, 7, 0.8);
+    }
+}
+
+/* Task Assignment Styles */
+.member-checkbox {
+    margin-right: 0.5rem;
+}
+
+.member-checkbox:checked + label {
+    background-color: rgba(13, 110, 253, 0.1);
+    border-radius: 5px;
+    padding: 0.5rem;
+}
+
+.member-checkbox + label {
+    width: 100%;
+    margin-bottom: 0.75rem;
+    padding: 0.5rem;
+    border-radius: 5px;
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+}
+
+.member-checkbox + label:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Task assignment modal specific styles */
+#assignTaskModal .form-control,
+#assignTaskModal .form-select,
+#bulkAssignTaskModal .form-control,
+#bulkAssignTaskModal .form-select {
+    border-radius: 8px;
+}
+
+#assignTaskModal .modal-body,
+#bulkAssignTaskModal .modal-body {
+    padding: 1.5rem;
+}
+
+/* Quick actions card */
+.quick-actions-card {
+    margin-top: 1rem;
+}
+
+.quick-actions-card .btn {
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.quick-actions-card .btn:hover {
+    transform: translateY(-1px);
+}
+
+/* Bulk assign member selection */
+.member-selection-card {
+    border: 1px solid #dee2e6;
+    border-radius: 10px;
+}
+
+.member-selection-card .card-body {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* Avatar styles in member list */
+.avatar-sm {
+    width: 35px;
+    height: 35px;
+    font-size: 0.9rem;
+}
+
+/* Enhanced dropdown menu for actions */
+.dropdown-menu .dropdown-item {
+    padding: 0.75rem 1rem;
+    transition: all 0.2s ease;
+}
+
+.dropdown-menu .dropdown-item:hover {
+    background-color: #f8f9fa;
+    transform: translateX(3px);
+}
+
+.dropdown-menu .dropdown-item i {
+    width: 18px;
+    text-align: center;
+}
+
+/* Task priority colors in forms */
+select[name="priority"] option[value="low"] {
+    color: #28a745;
+}
+
+select[name="priority"] option[value="medium"] {
+    color: #ffc107;
+}
+
+select[name="priority"] option[value="high"] {
+    color: #fd7e14;
+}
+
+select[name="priority"] option[value="urgent"] {
+    color: #dc3545;
+}
+
+/* Form validation feedback */
+.was-validated .form-control:valid {
+    border-color: #28a745;
+}
+
+.was-validated .form-control:invalid {
+    border-color: #dc3545;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    #bulkAssignTaskModal .modal-dialog {
+        margin: 0.5rem;
+    }
+    
+    .member-checkbox + label {
+        padding: 0.75rem 0.5rem;
+    }
+    
+    .quick-actions-card .btn {
+        margin-bottom: 0.5rem;
+    }
+}

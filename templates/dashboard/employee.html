@@ -1,0 +1,412 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Work Management{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Welcome Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body bg-primary text-white rounded">
+                    <h2><i class="fas fa-tachometer-alt me-2"></i>Dashboard</h2>
+                    <p class="mb-0" id="welcomeMessage">Welcome back!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stats-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-tasks fa-2x mb-3"></i>
+                    <div class="stats-number" id="totalTasks">0</div>
+                    <div class="stats-label">Total Tasks</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stats-card bg-success">
+                <div class="card-body text-center">
+                    <i class="fas fa-check-circle fa-2x mb-3"></i>
+                    <div class="stats-number" id="completedTasks">0</div>
+                    <div class="stats-label">Completed</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stats-card bg-warning">
+                <div class="card-body text-center">
+                    <i class="fas fa-spinner fa-2x mb-3"></i>
+                    <div class="stats-number" id="inProgressTasks">0</div>
+                    <div class="stats-label">In Progress</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stats-card bg-info">
+                <div class="card-body text-center">
+                    <i class="fas fa-clock fa-2x mb-3"></i>
+                    <div class="stats-number" id="todoTasks">0</div>
+                    <div class="stats-label">To Do</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts and Recent Tasks -->
+    <div class="row">
+        <!-- Progress Chart -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-chart-pie me-2"></i>Task Progress</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="progressChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Priority Breakdown -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-chart-bar me-2"></i>Priority Breakdown</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="priorityChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Tasks -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5><i class="fas fa-list me-2"></i>Recent Tasks</h5>
+                    <a href="/tasks" class="btn btn-primary btn-sm">View All Tasks</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Status</th>
+                                    <th>Priority</th>
+                                    <th>Deadline</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentTasksTable">
+                                <tr>
+                                    <td colspan="5" class="text-center">
+                                        <div class="spinner-border" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upcoming Deadlines -->
+    <div class="row mt-4">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header bg-warning text-white">
+                    <h5><i class="fas fa-exclamation-triangle me-2"></i>Upcoming Deadlines</h5>
+                </div>
+                <div class="card-body">
+                    <div id="upcomingDeadlines">
+                        <div class="text-center">
+                            <div class="spinner-border spinner-border-sm" role="status"></div>
+                            <span class="ms-2">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5><i class="fas fa-exclamation-circle me-2"></i>Overdue Tasks</h5>
+                </div>
+                <div class="card-body">
+                    <div id="overdueTasks">
+                        <div class="text-center">
+                            <div class="spinner-border spinner-border-sm" role="status"></div>
+                            <span class="ms-2">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions Modal -->
+<div class="modal fade" id="quickActionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Quick Actions</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-grid gap-2">
+                    <a href="/tasks" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Create New Task
+                    </a>
+                    <a href="/reports" class="btn btn-success">
+                        <i class="fas fa-chart-bar me-2"></i>Generate Report
+                    </a>
+                    <a href="/profile" class="btn btn-info">
+                        <i class="fas fa-user-edit me-2"></i>Update Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Floating Action Button -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
+    <button class="btn btn-primary btn-lg rounded-circle" data-bs-toggle="modal" data-bs-target="#quickActionModal">
+        <i class="fas fa-plus"></i>
+    </button>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let progressChart, priorityChart;
+
+$(document).ready(function() {
+    loadDashboardData();
+    initializeCharts();
+    
+    // Refresh data every 5 minutes
+    setInterval(loadDashboardData, 300000);
+});
+
+async function loadDashboardData() {
+    try {
+        const user = WorkManagement.currentUser();
+        if (!user) {
+            window.location.href = '/login';
+            return;
+        }
+        
+        // Update welcome message
+        $('#welcomeMessage').text(`Welcome back, ${user.name}! (${user.role})`);
+        
+        // Load dashboard stats
+        const response = await apiCall(`/tasks/dashboard?user_id=${user.id}`);
+        
+        // Update statistics cards
+        $('#totalTasks').text(response.total_tasks);
+        $('#completedTasks').text(response.status_breakdown.completed);
+        $('#inProgressTasks').text(response.status_breakdown.in_progress);
+        $('#todoTasks').text(response.status_breakdown.todo);
+        
+        // Update charts
+        updateProgressChart(response.status_breakdown);
+        updatePriorityChart(response.priority_breakdown);
+        
+        // Load recent tasks
+        loadRecentTasks(user.id);
+        
+        // Load upcoming deadlines and overdue tasks
+        loadUpcomingDeadlines(user.id);
+        
+    } catch (error) {
+        console.error('Error loading dashboard data:', error);
+        showAlert('danger', 'Error loading dashboard data');
+    }
+}
+
+async function loadRecentTasks(userId) {
+    try {
+        const tasks = await apiCall(`/tasks/user/${userId}`);
+        const recentTasks = tasks.slice(0, 5); // Show only 5 recent tasks
+        
+        let tableHTML = '';
+        if (recentTasks.length === 0) {
+            tableHTML = '<tr><td colspan="5" class="text-center text-muted">No tasks found</td></tr>';
+        } else {
+            recentTasks.forEach(task => {
+                tableHTML += `
+                    <tr>
+                        <td>${task.title}</td>
+                        <td>${formatStatus(task.status)}</td>
+                        <td>${formatPriority(task.priority)}</td>
+                        <td>${formatDate(task.deadline)}</td>
+                        <td>
+                            <a href="/tasks" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+        
+        $('#recentTasksTable').html(tableHTML);
+        
+    } catch (error) {
+        $('#recentTasksTable').html('<tr><td colspan="6" class="text-center text-danger">Error loading tasks</td></tr>');
+    }
+}
+
+async function loadUpcomingDeadlines(userId) {
+    try {
+        const tasks = await apiCall(`/tasks/user/${userId}`);
+        
+        // Filter upcoming deadlines (within 7 days)
+        const now = new Date();
+        const next7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+        
+        const upcomingTasks = tasks.filter(task => {
+            if (!task.deadline || task.status === 'done') return false;
+            const deadline = new Date(task.deadline);
+            return deadline > now && deadline <= next7Days;
+        });
+        
+        const overdueTasks = tasks.filter(task => {
+            if (!task.deadline || task.status === 'done') return false;
+            const deadline = new Date(task.deadline);
+            return deadline < now;
+        });
+        
+        // Update upcoming deadlines
+        let upcomingHTML = '';
+        if (upcomingTasks.length === 0) {
+            upcomingHTML = '<p class="text-muted">No upcoming deadlines</p>';
+        } else {
+            upcomingTasks.forEach(task => {
+                upcomingHTML += `
+                    <div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded">
+                        <div>
+                            <strong>${task.title}</strong><br>
+                            <small class="text-muted">${formatDate(task.deadline)}</small>
+                        </div>
+                        <span class="badge bg-warning text-dark">${task.priority}</span>
+                    </div>
+                `;
+            });
+        }
+        $('#upcomingDeadlines').html(upcomingHTML);
+        
+        // Update overdue tasks
+        let overdueHTML = '';
+        if (overdueTasks.length === 0) {
+            overdueHTML = '<p class="text-muted">No overdue tasks</p>';
+        } else {
+            overdueTasks.forEach(task => {
+                overdueHTML += `
+                    <div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded">
+                        <div>
+                            <strong>${task.title}</strong><br>
+                            <small class="text-danger">Due: ${formatDate(task.deadline)}</small>
+                        </div>
+                        <span class="badge bg-danger">${task.priority}</span>
+                    </div>
+                `;
+            });
+        }
+        $('#overdueTasks').html(overdueHTML);
+        
+    } catch (error) {
+        $('#upcomingDeadlines').html('<p class="text-danger">Error loading deadlines</p>');
+        $('#overdueTasks').html('<p class="text-danger">Error loading overdue tasks</p>');
+    }
+}
+
+function initializeCharts() {
+    // Progress Chart
+    const progressCtx = document.getElementById('progressChart').getContext('2d');
+    progressChart = new Chart(progressCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Completed', 'In Progress', 'To Do'],
+            datasets: [{
+                data: [0, 0, 0],
+                backgroundColor: ['#28a745', '#ffc107', '#17a2b8'],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+    
+    // Priority Chart
+    const priorityCtx = document.getElementById('priorityChart').getContext('2d');
+    priorityChart = new Chart(priorityCtx, {
+        type: 'bar',
+        data: {
+            labels: ['High', 'Medium', 'Low'],
+            datasets: [{
+                label: 'Tasks',
+                data: [0, 0, 0],
+                backgroundColor: ['#dc3545', '#ffc107', '#28a745'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+}
+
+function updateProgressChart(statusData) {
+    progressChart.data.datasets[0].data = [
+        statusData.completed,
+        statusData.in_progress,
+        statusData.todo
+    ];
+    progressChart.update();
+}
+
+function updatePriorityChart(priorityData) {
+    priorityChart.data.datasets[0].data = [
+        priorityData.high,
+        priorityData.medium,
+        priorityData.low
+    ];
+    priorityChart.update();
+}
+</script>
+{% endblock %}
