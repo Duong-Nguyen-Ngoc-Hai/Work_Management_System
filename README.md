@@ -546,6 +546,7 @@ docker-compose logs mysql
 
 # Test database connection
 docker-compose exec web python -c "from database import db; print('DB OK')"
+```
 
 ## 🤝 Contributing
 
