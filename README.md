@@ -33,7 +33,6 @@ A comprehensive web-based work management system built with Flask and Bootstrap,
 - Individual weekly reports
 - Team summary reports
 - Task completion statistics
-- File management statistics
 - Export capabilities (PDF/Excel)
 
 ## 🏗️ System Architecture
@@ -85,7 +84,6 @@ File Storage
 
 - Python 3.8 or higher
 - MySQL 5.7 or higher
-- Node.js (optional, for development tools)
 
 ### Method 1: Local Installation
 
@@ -126,6 +124,7 @@ File Storage
 5. **Initialize database**
    ```bash
    python setup_db.py
+   python init_data.py
    ```
 
 6. **Run the application**
@@ -146,6 +145,7 @@ File Storage
 2. **Build and run with Docker Compose**
    ```bash
    docker-compose up --build
+   docker-compose exec web python init_data.py
    ```
 
    The application will be available at `http://localhost:5000`
@@ -486,68 +486,66 @@ The system provides RESTful APIs for all major functions:
 
 ```
 work_management/
-├── app.py                 # Main Flask application
-├── config.py             # Configuration settings
-├── database.py           # Database connection
-├── setup_db.py          # Database initialization
-├── requirements.txt      # Python dependencies
-├── .env                 # Environment variables
-├── models/              # Database models
-│   ├── __init__.py
+├── app.py                   # Main Flask application
+├── config.py               # Configuration settings
+├── database.py             # Database initialization
+├── init_data.py            # Database initialization script
+├── setup_db.py             # Alternative setup script
+├── requirements.txt        # Python dependencies
+├── docker-compose.yml      # Docker configuration
+├── Dockerfile              # Docker image definition
+├── .env                    # Environment variables
+├── models/                 # Database models
 │   ├── user.py
 │   ├── task.py
 │   ├── group.py
-│   ├── file.py
 │   ├── report.py
-│   ├── join_request.py
-│   └── notification.py
-├── routes/              # API route handlers
-│   ├── __init__.py
+│   └── ...
+├── routes/                 # API routes
 │   ├── auth_routes.py
 │   ├── task_routes.py
 │   ├── user_routes.py
-│   ├── group_routes.py
-│   ├── file_routes.py
-│   ├── report_routes.py
-│   └── notification_routes.py
-├── templates/           # HTML templates
+│   └── ...
+├── templates/              # HTML templates
 │   ├── base.html
 │   ├── auth/
-│   │   ├── login.html
-│   │   └── register.html
 │   ├── dashboard/
-│   │   └── employee.html
 │   ├── tasks/
-│   │   ├── create.html
-│   │   ├── detail.html
-│   │   └── list.html
 │   ├── users/
-│   │   ├── list.html
-│   │   └── profile.html
-│   ├── groups/
-│   │   ├── detail.html
-│   │   └── list.html
-│   ├── reports/
-│   │   ├── generate.html
-│   │   └── list.html
-│   └── notification/
-│       └── list.html
-├── static/              # Static assets
+│   └── ...
+├── static/                 # Static files
 │   ├── css/
-│   │   ├── custom.css
-│   │   ├── groups.css
-│   │   └── profile.css
-│   └── js/
-│       ├── app.js
-│       ├── groups.js
-│       ├── notifications.js
-│       └── profile.js
-├── uploads/             # File storage
-│   └── reports/         # Generated reports
-└── utils/               # Utility functions
-    ├── __init__.py
-    └── notification_scheduler.py
+│   ├── js/
+│   └── images/
+├── uploads/                # File uploads
+│   └── reports/            # Generated reports
+└── logs/                   # Application logs
 ```
+
+## 🔧 Configuration
+
+### Environment Variables
+
+| Variable              | Description                | Default Value                                    |
+|----------------------|----------------------------|--------------------------------------------------|
+| `DATABASE_URL`       | Database connection string | `mysql://work_user:work_pass123@mysql/work_management` |
+| `SECRET_KEY`         | Flask secret key          | `your-super-secret-key-change-this`             |
+| `UPLOAD_FOLDER`      | File upload directory     | `/app/uploads` (Docker) / `uploads` (Local)     |
+| `FLASK_ENV`          | Flask environment         | `production`                                     |
+| `FLASK_DEBUG`        | Debug mode                | `False`                                          |
+
+## 🐛 Common Issues
+
+### Database Connection Issues
+```bash
+# Check MySQL is running
+docker-compose ps mysql
+
+# Check database logs
+docker-compose logs mysql
+
+# Test database connection
+docker-compose exec web python -c "from database import db; print('DB OK')"
 
 ## 🤝 Contributing
 
