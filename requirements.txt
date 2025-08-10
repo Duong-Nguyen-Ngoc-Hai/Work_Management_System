@@ -8,3 +8,7 @@ pandas
 openpyxl
 reportlab==4.0.4
 APScheduler==3.11.0
+cryptography
+mysqlclient
+Jinja2
+Flask-CORS

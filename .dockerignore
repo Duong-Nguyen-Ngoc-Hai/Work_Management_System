@@ -1,0 +1,45 @@
+# Git
+.git
+.gitignore
+
+# Environment files
+.env.local
+.env.development
+.env.test
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.coverage
+.pytest_cache/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Docker
+docker-compose.override.yml
+Dockerfile.dev
+
+# Documentation
+README.md
+docs/
+
+# Uploads (will be mounted as volume)
+uploads/

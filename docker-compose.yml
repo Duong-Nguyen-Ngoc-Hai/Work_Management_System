@@ -1,0 +1,71 @@
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: work_management_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: work_management
+      MYSQL_USER: work_user
+      MYSQL_PASSWORD: work_pass123
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - work_network
+    command: --default-authentication-plugin=mysql_native_password
+
+  # Flask Application
+  web:
+    build: .
+    container_name: work_management_web
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - FLASK_DEBUG=0
+      - DATABASE_URL=mysql://work_user:work_pass123@mysql/work_management
+      - SECRET_KEY=your-super-secret-key-change-this-in-production
+      - UPLOAD_FOLDER=/app/uploads
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+    depends_on:
+      - mysql
+    networks:
+      - work_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/test-db"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # phpMyAdmin (optional - for database management)
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: work_management_phpmyadmin
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: work_user
+      PMA_PASSWORD: work_pass123
+      MYSQL_ROOT_PASSWORD: root123
+    depends_on:
+      - mysql
+    networks:
+      - work_network
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  work_network:
+    driver: bridge

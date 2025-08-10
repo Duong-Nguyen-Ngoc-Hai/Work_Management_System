@@ -4,6 +4,7 @@ from database import db
 from models.user import User
 from models.group import Group
 from werkzeug.security import generate_password_hash
+from sqlalchemy import text
 
 app = create_app()
 
