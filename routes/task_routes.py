@@ -662,6 +662,8 @@ def bulk_create_tasks():
     
     try:
         created_tasks = []
+        task_title = data.get('title')
+        task_priority = data.get('priority', 'medium')
         
         for assignee_id in assignee_ids:
             task = Task(
@@ -680,9 +682,21 @@ def bulk_create_tasks():
         
         db.session.commit()
         
+        for task in created_tasks:
+            if task.assignee_id != assigner_id: 
+                create_notification(
+                    user_id=task.assignee_id,
+                    title=f"New task assigned: {task_title}",
+                    message=f"You have been assigned a new task '{task_title}' by {assigner.name}",
+                    notification_type=NotificationType.TASK_ASSIGNED,
+                    task_id=task.id,
+                    is_important=task_priority == 'high'
+                )
+        
         return jsonify({
             'message': f'Successfully created {len(created_tasks)} tasks',
-            'tasks_created': len(created_tasks)
+            'tasks_created': len(created_tasks),
+            'notifications_sent': len([t for t in created_tasks if t.assignee_id != assigner_id])
         })
         
     except Exception as e:
